@@ -23,6 +23,12 @@ jobs:
           git config user.name github-actions
           git config user.email github-actions@users.noreply.github.com
           git add .
-          current=`TZ=Asia/Shanghai date '+%Y-%m-%d %H:%M:%S'`
-          git commit -m "[${current}] random cron trigger by ${{ github.event_name }}"
-          git push origin master
+          # 判断有无文件变更，无变更直接跳过提交
+          CHANGES=$(git status --porcelain)
+          if [[ -n "$CHANGES" ]]; then
+            current=`TZ=Asia/Shanghai date '+%Y-%m-%d %H:%M:%S'`
+            git commit -m "[${current}] random cron trigger by ${{ github.event_name }}"
+            git push origin master
+          else
+            echo "日志文件无更新，无需提交"
+          fi
