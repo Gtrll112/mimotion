@@ -1,8 +1,7 @@
 name: 刷步数
-
 on:
   schedule:
-    - cron: '27 1,4,7,10,12,14,23 * * *'
+    - cron: '05 0,2,4,6,8,10,12,14 * * *'
   workflow_dispatch:
 
 jobs:
@@ -14,20 +13,21 @@ jobs:
         uses: actions/checkout@v5
         with:
           token: ${{ secrets.PAT }} #此处PAT需要申请，教程详见：README
+
       - name: Update system and install zsh
         run: |
           sudo -E apt-get -qq update
           sudo -E apt-get install zsh -y
-          
+
       - name: 初始化Python
         uses: actions/setup-python@v6
         with:
           python-version: "3.10"
-          
+
       - name: 开始
         env:
-            CONFIG: ${{ secrets.CONFIG }}
-            AES_KEY: ${{ secrets.AES_KEY }}
+          CONFIG: ${{ secrets.CONFIG }}
+          AES_KEY: ${{ secrets.AES_KEY }}
         run: |
           pip3 install requests pytz pycryptodome
           python3 main.py
@@ -37,5 +37,10 @@ jobs:
           git config user.name github-actions
           git config user.email github-actions@users.noreply.github.com
           git add .
-          git commit -m "persist tokens trigger by ${{ github.event_name }}"
-          git push origin master
+          CHANGES=$(git status --porcelain)
+          if [[ -n "$CHANGES" ]]; then
+            git commit -m "persist tokens trigger by ${{ github.event_name }}"
+            git push origin master
+          else
+            echo "凭证无更新，跳过提交与推送"
+          fi
