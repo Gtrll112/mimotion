@@ -40,7 +40,8 @@ jobs:
           CHANGES=$(git status --porcelain)
           if [[ -n "$CHANGES" ]]; then
             git commit -m "persist tokens trigger by ${{ github.event_name }}"
-            git push origin master
+            git pull --rebase origin master || true
+            git push origin master || true
           else
             echo "凭证无更新，跳过提交与推送"
           fi
